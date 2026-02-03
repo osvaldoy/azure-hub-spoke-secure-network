@@ -1,0 +1,37 @@
+parameters:
+  bicepFile: ""
+  location: ""
+  resourceGroup: ""
+  env: "dev"
+  workloadName: "network"
+  hubAddressPrefix: "10.0.0.0/16"
+  spokeAppAddressPrefix: "10.10.0.0/16"
+  spokeDataAddressPrefix: "10.20.0.0/16"
+  hubSubnetFwPrefix: "10.0.1.0/24"
+  hubSubnetMgmtPrefix: "10.0.2.0/24"
+  spokeAppSubnetPrefix: "10.10.1.0/24"
+  spokeDataSubnetPrefix: "10.20.1.0/24"
+
+steps:
+- task: AzureCLI@2
+  displayName: "Create RG (safe) + What-If"
+  inputs:
+    azureSubscription: "omyorgapps"
+    scriptType: "ps"
+    scriptLocation: "inlineScript"
+    inlineScript: |
+      az account show
+      az group create -n "${{ parameters.resourceGroup }}" -l "${{ parameters.location }}" 1>$null
+
+      az deployment group what-if `
+        -g "${{ parameters.resourceGroup }}" `
+        -f "${{ parameters.bicepFile }}" `
+        -p env="${{ parameters.env }}" `
+           workloadName="${{ parameters.workloadName }}" `
+           hubAddressPrefix="${{ parameters.hubAddressPrefix }}" `
+           hubSubnetFwPrefix="${{ parameters.hubSubnetFwPrefix }}" `
+           hubSubnetMgmtPrefix="${{ parameters.hubSubnetMgmtPrefix }}" `
+           spokeAppAddressPrefix="${{ parameters.spokeAppAddressPrefix }}" `
+           spokeAppSubnetPrefix="${{ parameters.spokeAppSubnetPrefix }}" `
+           spokeDataAddressPrefix="${{ parameters.spokeDataAddressPrefix }}" `
+           spokeDataSubnetPrefix="${{ parameters.spokeDataSubnetPrefix }}"
